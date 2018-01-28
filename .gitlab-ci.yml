@@ -39,7 +39,7 @@ Publish to GitHub:
   image: alpine:3.7
   stage: publish
   before_script:
-    - apk add --update git ssh
+    - apk add --update git openssh
   script:
     - '[ ! -d "${HOME}/.ssh" ] && mkdir -p "${HOME}/.ssh"'
     - echo "${GITHUB_SSH_KEY}" > "${HOME}/.ssh/id_rsa"
