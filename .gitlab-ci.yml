@@ -1,0 +1,49 @@
+image: docker:latest
+
+stages:
+  - build
+  - publish
+
+services:
+  - docker:dind
+
+variables:
+  IMAGE_URL: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}"
+
+before_script:
+  - docker login -u gitlab-ci-token -p "${CI_JOB_TOKEN}" "${CI_REGISTRY}"
+
+Build Images:
+  stage: build
+  script:
+    - docker build -t "${IMAGE_URL}" .
+    - docker push "${IMAGE_URL}"
+
+Publish to Docker Hub:
+  stage: publish
+  variables:
+    HUB_IMAGE_URL: ${DOCKER_HUB_IMAGE}:latest
+  before_script:
+    - >
+      docker login
+      -u "${DOCKER_HUB_USERNAME}"
+      -p "${DOCKER_HUB_PASSWORD}"
+      registry.hub.docker.com
+  script:
+    - docker pull "${IMAGE_URL}"
+    - docker tag "${IMAGE_URL}" "${HUB_IMAGE_URL}"
+    - docker push "${HUB_IMAGE_URL}"
+  only:
+    - master
+
+Publish to GitHub:
+  image: alpine:3.7
+  stage: publish
+  script:
+    - apk add --update git ssh
+    - '[ ! -d "${HOME}/.ssh" ] && mkdir -p "${HOME}/.ssh"'
+    - echo "${GITHUB_SSH_KEY}" > "${HOME}/.ssh/id_rsa"
+    - git remote set-url origin "${GITHUB_REPO}"
+    - git push "${GITHUB_REPO}"
+  only:
+    - master
