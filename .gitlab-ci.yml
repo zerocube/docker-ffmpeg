@@ -23,14 +23,13 @@ Publish to Docker Hub:
   stage: publish
   variables:
     HUB_IMAGE_URL: ${DOCKER_HUB_IMAGE}:latest
-  before_script:
+  script:
+    - docker pull "${IMAGE_URL}"
     - >
       docker login
       -u "${DOCKER_HUB_USERNAME}"
       -p "${DOCKER_HUB_PASSWORD}"
       registry.hub.docker.com
-  script:
-    - docker pull "${IMAGE_URL}"
     - docker tag "${IMAGE_URL}" "${HUB_IMAGE_URL}"
     - docker push "${HUB_IMAGE_URL}"
   only:
@@ -39,8 +38,9 @@ Publish to Docker Hub:
 Publish to GitHub:
   image: alpine:3.7
   stage: publish
-  script:
+  before_script:
     - apk add --update git ssh
+  script:
     - '[ ! -d "${HOME}/.ssh" ] && mkdir -p "${HOME}/.ssh"'
     - echo "${GITHUB_SSH_KEY}" > "${HOME}/.ssh/id_rsa"
     - git remote set-url origin "${GITHUB_REPO}"
