@@ -48,6 +48,6 @@ Publish to GitHub:
     - git config user.name "${GITLAB_USER_NAME} (${GITLAB_USER_LOGIN})"
     - git config user.email "${GITLAB_USER_EMAIL}"
     - git remote set-url origin "${GITHUB_REPO}"
-    - git push "${GITHUB_REPO}"
+    - 'git push "${GITHUB_REPO}" HEAD:master'
   only:
     - master
