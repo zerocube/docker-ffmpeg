@@ -16,6 +16,7 @@ before_script:
 Build Images:
   stage: build
   script:
+    - apk add --update git
     - ./docker-build.sh
     - docker push "${IMAGE_URL}"
 
