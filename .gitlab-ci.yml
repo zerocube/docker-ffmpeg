@@ -44,6 +44,8 @@ Publish to GitHub:
   script:
     - '[ ! -d "${SSH_DIR}" ] && mkdir -p "${SSH_DIR}"'
     - base64 -d <<< "${SSH_ZEROCUBE_DELIVERY_PRIVATE_KEY}" > "${SSH_DIR}/id_rsa"
+    - git config user.name "${GITLAB_USER_NAME} (${GITLAB_USER_LOGIN})"
+    - git config user.email "${GITLAB_USER_EMAIL}"
     - git remote set-url origin "${GITHUB_REPO}"
     - git push "${GITHUB_REPO}"
   only:
