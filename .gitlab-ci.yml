@@ -39,10 +39,11 @@ Publish to GitHub:
   image: alpine:3.7
   stage: publish
   before_script:
+    - export SSH_DIR="${HOME}/.ssh"
     - apk add --update git openssh
   script:
-    - '[ ! -d "${HOME}/.ssh" ] && mkdir -p "${HOME}/.ssh"'
-    - echo "${GITHUB_SSH_KEY}" > "${HOME}/.ssh/id_rsa"
+    - '[ ! -d "${SSH_DIR}" ] && mkdir -p "${SSH_DIR}"'
+    - base64 -d <<< "${SSH_ZEROCUBE_DELIVERY_PRIVATE_KEY}" > "${SSH_DIR}/id_rsa"
     - git remote set-url origin "${GITHUB_REPO}"
     - git push "${GITHUB_REPO}"
   only:
