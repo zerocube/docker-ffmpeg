@@ -16,7 +16,7 @@ before_script:
 Build Images:
   stage: build
   script:
-    - ./docker_build.sh
+    - ./docker-build.sh
     - docker push "${IMAGE_URL}"
 
 Publish to Docker Hub:
