@@ -4,9 +4,6 @@ stages:
   - build
   - publish
 
-services:
-  - docker:dind
-
 variables:
   IMAGE_URL: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}"
 
@@ -15,6 +12,8 @@ before_script:
 
 Build Images:
   stage: build
+  services:
+    - docker:dind
   script:
     - apk add --update git
     - ./docker-build.sh
@@ -44,7 +43,7 @@ Publish to GitHub:
     - apk add --update git openssh
   script:
     - '[ ! -d "${SSH_DIR}" ] && mkdir -p "${SSH_DIR}"'
-    - base64 -d <<< "${SSH_ZEROCUBE_DELIVERY_PRIVATE_KEY}" | tee "${SSH_DIR}"
+    - echo -n "${SSH_ZEROCUBE_DELIVERY_PRIVATE_KEY}" | base64 -d | tee "${SSH_DIR}"
     - git config user.name "${GITLAB_USER_NAME} (${GITLAB_USER_LOGIN})"
     - git config user.email "${GITLAB_USER_EMAIL}"
     - git remote set-url origin "${GITHUB_REPO}"
