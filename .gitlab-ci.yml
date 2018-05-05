@@ -5,7 +5,7 @@ stages:
   - publish
 
 variables:
-  IMAGE_URL: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}"
+  IMAGE_URL: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
 
 before_script:
   - docker login -u gitlab-ci-token -p "${CI_JOB_TOKEN}" "${CI_REGISTRY}"

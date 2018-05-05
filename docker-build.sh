@@ -18,5 +18,3 @@ docker build \
   --tag "${IMAGE_URL}" \
   --cache-from "${PREV_IMAGE}" \
   "$(get_git_root)"
-
-docker push "${IMAGE_URL}"
