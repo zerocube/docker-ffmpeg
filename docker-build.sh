@@ -2,9 +2,9 @@
 
 # Download image to cache from, up to three refs behind
 for REF in \
-  "$(git rev-parse --short HEAD~)" \
-  "$(git rev-parse --short HEAD~~)" \
-  "$(git rev-parse --short HEAD~~~)"; do
+  "$(git rev-parse HEAD~)" \
+  "$(git rev-parse HEAD~~)" \
+  "$(git rev-parse HEAD~~~)"; do
 
   PREV_IMAGE="${CI_REGISTRY_IMAGE}:${REF}"
   docker pull "${PREV_IMAGE}" && break
