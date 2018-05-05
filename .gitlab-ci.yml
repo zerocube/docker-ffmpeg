@@ -40,6 +40,7 @@ Publish to GitHub:
   stage: publish
   before_script:
     - export SSH_DIR="${HOME}/.ssh"
+    - export TMP_DIR="/tmp/repoclone"
     - apk add --update git openssh
   script:
     - '[ ! -d "${SSH_DIR}" ] && mkdir -p "${SSH_DIR}"'
@@ -50,7 +51,8 @@ Publish to GitHub:
     - cp ssh_config "${SSH_DIR}/config"
     - git config user.name "${GITLAB_USER_NAME} (${GITLAB_USER_LOGIN})"
     - git config user.email "${GITLAB_USER_EMAIL}"
-    - git remote set-url origin "${GITHUB_REPO}"
-    - 'git push "${GITHUB_REPO}" HEAD:master'
+    - git clone --bare "${CI_PROJECT_PATH}" "${TMP_DIR}"
+    - cd "${TMP_DIR}"
+    - 'git push --mirror "${GITHUB_REPO}"'
   only:
     - master
