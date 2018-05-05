@@ -46,6 +46,7 @@ Publish to GitHub:
     - >
       echo -n "${SSH_ZEROCUBE_DELIVERY_PRIVATE_KEY}"
       | base64 -d > "${SSH_DIR}/id_rsa"
+    - chmod 600 "${SSH_DIR}/id_rsa"
     - cp ssh_config "${SSH_DIR}/config"
     - git config user.name "${GITLAB_USER_NAME} (${GITLAB_USER_LOGIN})"
     - git config user.email "${GITLAB_USER_EMAIL}"
