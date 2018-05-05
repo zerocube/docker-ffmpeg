@@ -51,7 +51,7 @@ Publish to GitHub:
     - cp ssh_config "${SSH_DIR}/config"
     - git config user.name "${GITLAB_USER_NAME} (${GITLAB_USER_LOGIN})"
     - git config user.email "${GITLAB_USER_EMAIL}"
-    - git clone --bare "${CI_PROJECT_PATH}" "${TMP_DIR}"
+    - git clone --bare "git@gitlab.com:${CI_PROJECT_PATH}" "${TMP_DIR}"
     - cd "${TMP_DIR}"
     - 'git push --mirror "${GITHUB_REPO}"'
   only:
