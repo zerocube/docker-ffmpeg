@@ -21,6 +21,8 @@ Build Images:
 
 Publish to Docker Hub:
   stage: publish
+  services:
+    - docker:dind
   variables:
     HUB_IMAGE_URL: ${DOCKER_HUB_IMAGE}:latest
   script:
