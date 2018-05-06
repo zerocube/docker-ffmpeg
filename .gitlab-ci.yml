@@ -23,8 +23,8 @@ Publish to Docker Hub:
   stage: publish
   services:
     - docker:dind
-  variables:
-    HUB_IMAGE_URL: ${DOCKER_HUB_IMAGE}:latest
+  before_script:
+    - export HUB_IMAGE_URL="${DOCKER_HUB_REGISTRY}/${DOCKER_HUB_IMAGE}:latest"
   script:
     - docker pull "${IMAGE_URL}"
     - >
