@@ -1,60 +1,81 @@
-image: docker:latest
-
 stages:
-  - build
-  - publish
+- build
+- publish
 
 variables:
-  IMAGE_URL: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
+  DOCKER_IMAGE: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
+  DOCKER_IMAGE_PREV: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BEFORE_SHA}"
+  DOCKER_IMAGE_LATEST: "${CI_REGISTRY_IMAGE}:latest"
 
-before_script:
-  - docker login -u gitlab-ci-token -p "${CI_JOB_TOKEN}" "${CI_REGISTRY}"
+.Docker - Base:
+  image: docker:stable
+  services:
+  - docker:stable-dind
+  before_script:
+  - >
+    docker login
+    --username gitlab-ci-token
+    --password "${CI_JOB_TOKEN}"
+    "${CI_REGISTRY}"
+  tags:
+  - docker
 
 Build Images:
+  extends: .Docker - Base
   stage: build
-  services:
-    - docker:stable-dind
   script:
-    - apk add --update git
-    - ./docker-build.sh
-    - docker push "${IMAGE_URL}"
+  - docker pull --quiet "${DOCKER_IMAGE}" && exit 0
+  - docker pull --quiet "${DOCKER_IMAGE_PREV}" &
+  - docker pull --quiet "${DOCKER_IMAGE_LATEST}" &
+  - wait || true
+  - >
+    docker build
+    --cache-from "${DOCKER_IMAGE_PREV}"
+    --cache-from "${DOCKER_IMAGE_LATEST}"
+    --tag "${DOCKER_IMAGE}"
+    "${PWD}"
+  - docker tag "${DOCKER_IMAGE}" "${DOCKER_IMAGE_LATEST}"
+  - docker push "${DOCKER_IMAGE}" &
+  - docker push "${DOCKER_IMAGE_LATEST}" &
+  - wait
 
 Publish to Docker Hub:
+  extends: .Docker - Base
   stage: publish
-  services:
-    - docker:stable-dind
+  variables:
+    DOCKER_HUB_IMAGE: "zerocube/ffmpeg"
   before_script:
-    - export HUB_IMAGE_URL="${DOCKER_HUB_REGISTRY}/${DOCKER_HUB_IMAGE}:latest"
+  - export HUB_IMAGE_URL="${DOCKER_HUB_REGISTRY}/${DOCKER_HUB_IMAGE}:latest"
   script:
-    - docker pull "${IMAGE_URL}"
-    - >
-      docker login
-      -u "${DOCKER_HUB_USERNAME}"
-      -p "${DOCKER_HUB_PASSWORD}"
-      registry.hub.docker.com
-    - docker tag "${IMAGE_URL}" "${HUB_IMAGE_URL}"
-    - docker push "${HUB_IMAGE_URL}"
+  - docker pull "${DOCKER_IMAGE}"
+  - >
+    docker login
+    -u "${DOCKER_HUB_USERNAME}"
+    -p "${DOCKER_HUB_PASSWORD}"
+    registry.hub.docker.com
+  - docker tag "${DOCKER_IMAGE}" "${HUB_IMAGE_URL}"
+  - docker push "${HUB_IMAGE_URL}"
   only:
-    - master
+  - master
 
 Publish to GitHub:
   image: alpine:3.7
   stage: publish
   before_script:
-    - export SSH_DIR="${HOME}/.ssh"
-    - export TMP_DIR="/tmp/repoclone"
-    - apk add --update git openssh
+  - export SSH_DIR="${HOME}/.ssh"
+  - export TMP_DIR="/tmp/repoclone"
+  - apk add --update git openssh
   script:
-    - '[ ! -d "${SSH_DIR}" ] && mkdir -p "${SSH_DIR}"'
-    - >
-      echo -n "${SSH_ZEROCUBE_DELIVERY_PRIVATE_KEY}"
-      | base64 -d > "${SSH_DIR}/id_rsa"
-    - chmod 600 "${SSH_DIR}/id_rsa"
-    - cp ssh_config "${SSH_DIR}/config"
-    - git config user.name "${GITLAB_USER_NAME} (${GITLAB_USER_LOGIN})"
-    - git config user.email "${GITLAB_USER_EMAIL}"
-    - git clone --bare "git@gitlab.com:${CI_PROJECT_PATH}" "${TMP_DIR}"
-    - cd "${TMP_DIR}"
-    - 'git push --mirror "${GITHUB_REPO}"'
+  - '[ ! -d "${SSH_DIR}" ] && mkdir -p "${SSH_DIR}"'
+  - >
+    echo -n "${SSH_ZEROCUBE_DELIVERY_PRIVATE_KEY}" |
+    base64 -d > "${SSH_DIR}/id_rsa"
+  - chmod 600 "${SSH_DIR}/id_rsa"
+  - cp ssh_config "${SSH_DIR}/config"
+  - git config user.name "${GITLAB_USER_NAME} (${GITLAB_USER_LOGIN})"
+  - git config user.email "${GITLAB_USER_EMAIL}"
+  - git clone --bare "git@gitlab.com:${CI_PROJECT_PATH}" "${TMP_DIR}"
+  - cd "${TMP_DIR}"
+  - 'git push --mirror "${GITHUB_REPO}"'
   only:
-    - master
+  - master
