@@ -13,7 +13,7 @@ before_script:
 Build Images:
   stage: build
   services:
-    - docker:dind
+    - docker:stable-dind
   script:
     - apk add --update git
     - ./docker-build.sh
