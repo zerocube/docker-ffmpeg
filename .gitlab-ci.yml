@@ -22,7 +22,7 @@ Build Images:
 Publish to Docker Hub:
   stage: publish
   services:
-    - docker:dind
+    - docker:stable-dind
   before_script:
     - export HUB_IMAGE_URL="${DOCKER_HUB_REGISTRY}/${DOCKER_HUB_IMAGE}:latest"
   script:
