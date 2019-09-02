@@ -11,21 +11,9 @@ Docker Build:
   extends: .Docker - Build
 
 Publish to Docker Hub:
-  extends: .Docker - Base
-  stage: publish
+  extends: .Docker Hub - Publish
   variables:
-    DOCKER_HUB_IMAGE: "zerocube/ffmpeg"
-  before_script:
-  - export HUB_IMAGE_URL="${DOCKER_HUB_REGISTRY}/${DOCKER_HUB_IMAGE}:latest"
-  script:
-  - docker pull "${DOCKER_IMAGE}"
-  - >
-    docker login
-    -u "${DOCKER_HUB_USERNAME}"
-    -p "${DOCKER_HUB_PASSWORD}"
-    registry.hub.docker.com
-  - docker tag "${DOCKER_IMAGE}" "${HUB_IMAGE_URL}"
-  - docker push "${HUB_IMAGE_URL}"
+    DOCKER_HUB_IMAGE: "zerocube/ffmpeg:latest"
   only:
   - master
 
