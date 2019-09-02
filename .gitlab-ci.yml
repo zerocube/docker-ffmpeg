@@ -1,43 +1,14 @@
+include:
+- project: 'zerocube/gitlab-ci'
+  ref: master
+  file: '/docker.yml'
+
 stages:
 - build
 - publish
 
-variables:
-  DOCKER_IMAGE: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
-  DOCKER_IMAGE_PREV: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_BEFORE_SHA}"
-  DOCKER_IMAGE_LATEST: "${CI_REGISTRY_IMAGE}:latest"
-
-.Docker - Base:
-  image: docker:stable
-  services:
-  - docker:stable-dind
-  before_script:
-  - >
-    docker login
-    --username gitlab-ci-token
-    --password "${CI_JOB_TOKEN}"
-    "${CI_REGISTRY}"
-  tags:
-  - docker
-
-Build Images:
-  extends: .Docker - Base
-  stage: build
-  script:
-  - docker pull --quiet "${DOCKER_IMAGE}" && exit 0
-  - docker pull --quiet "${DOCKER_IMAGE_PREV}" &
-  - docker pull --quiet "${DOCKER_IMAGE_LATEST}" &
-  - wait || true
-  - >
-    docker build
-    --cache-from "${DOCKER_IMAGE_PREV}"
-    --cache-from "${DOCKER_IMAGE_LATEST}"
-    --tag "${DOCKER_IMAGE}"
-    "${PWD}"
-  - docker tag "${DOCKER_IMAGE}" "${DOCKER_IMAGE_LATEST}"
-  - docker push "${DOCKER_IMAGE}" &
-  - docker push "${DOCKER_IMAGE_LATEST}" &
-  - wait
+Docker Build:
+  extends: .Docker - Build
 
 Publish to Docker Hub:
   extends: .Docker - Base
